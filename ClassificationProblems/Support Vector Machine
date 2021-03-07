@@ -1,0 +1,53 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import seaborn as sns
+from sklearn.preprocessing import scale
+from sklearn.model_selection import train_test_split,GridSearchCV,cross_val_score,cross_val_predict
+from sklearn.metrics import confusion_matrix,accuracy_score,classification_report,log_loss
+from sklearn.metrics import roc_auc_score,roc_curve
+import matplotlib.pyplot as plt
+from warnings import filterwarnings
+filterwarnings('ignore')
+
+from sklearn.svm import SVC
+
+diabetes = pd.read_csv('Diabetes.csv')
+df = diabetes.copy()
+df= df.dropna()
+y=df['Outcome']
+x = df.drop (['Outcome'],axis = 1)
+x_train,x_test,y_train,y_test = train_test_split(x,y,random_state = 42,test_size = 0.3)
+
+svc = SVC()
+svc_model = svc.fit(x_train,y_train)
+
+y_pred = svc_model.predict(x_test)
+
+svc_params = {'C':np.arange(1,10)} #0 olmamalı.
+
+svc = SVC(kernel='linear')
+
+svc_cv_model = GridSearchCV(svc,svc_params,cv=10,n_jobs=-1,verbose=2)
+
+svc_cv_model.fit(x_train,y_train)
+
+svc = SVC(kernel='linear',C=5).fit(x_train,y_train)
+
+y_pred = svc.predict(x_test)
+
+svc_model = SVC(kernel='rbf')
+svc_model.fit(x_train,y_train)
+
+y_pred = svc_model.predict(x_test)
+
+svc_params = {'C':[0.001,0.01,0.1,1,5,10,50,100],'gamma':[0.0001,0.001,0.01,0.1,1,5,10,50,100]}
+
+scv_cv_model = GridSearchCV(svc,svc_params,cv=10,n_jobs=-1,verbose = 2)
+svc_cv_model.fit(x_train,y_train)
+
+svc_tuned = SVC(C=10,gamma=0.0001).fit(x_train,y_train)
+y_pred = svc_tuned.predict(x_test)
+accuracy_score(y_pred,y_test)
+
