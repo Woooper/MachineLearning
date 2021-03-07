@@ -1,0 +1,39 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import seaborn as sns
+from sklearn.preprocessing import scale
+from sklearn.model_selection import train_test_split,GridSearchCV,cross_val_score,cross_val_predict
+from sklearn.metrics import confusion_matrix,accuracy_score,classification_report,log_loss
+from sklearn.metrics import roc_auc_score,roc_curve
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from warnings import filterwarnings
+filterwarnings('ignore')
+
+diabetes = pd.read_csv('Diabetes.csv')
+df = diabetes.copy()
+df= df.dropna()
+y=df['Outcome']
+x = df.drop (['Outcome'],axis = 1)
+x_train,x_test,y_train,y_test = train_test_split(x,y,random_state = 42,test_size = 0.3)
+
+knn = KNeighborsClassifier()
+knn_model = knn.fit(x_train,y_train)
+knn_model
+
+y_pred = knn_model.predict(x_test)
+knn_params = {'n_neighbors':np.arange(1,50)}
+
+knn = KNeighborsClassifier()
+knn_cv=GridSearchCV(knn,knn_params,cv=10)
+knn_cv.fit(x_train,y_train)
+
+knn= KNeighborsClassifier(11)
+knn_tuned = knn.fit(x_train,y_train)
+y_pred = knn_tuned.predict(x_test)
+accuracy_score(y_test,y_pred)
+
+
+
