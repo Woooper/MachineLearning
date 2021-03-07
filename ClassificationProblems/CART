@@ -1,1 +1,44 @@
 
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import seaborn as sns
+from sklearn.preprocessing import scale
+from sklearn.model_selection import train_test_split,GridSearchCV,cross_val_score,cross_val_predict
+from sklearn.metrics import confusion_matrix,accuracy_score,classification_report,log_loss
+from sklearn.metrics import roc_auc_score,roc_curve
+import matplotlib.pyplot as plt
+from warnings import filterwarnings
+filterwarnings('ignore')
+
+diabetes = pd.read_csv('Diabetes.csv')
+df = diabetes.copy()
+df= df.dropna()
+#y=df['Outcome']
+x = df.drop (['Outcome'],axis = 1)
+#x=df['Pregnancies']
+#x=pd.DataFrame(x)
+x_train,x_test,y_train,y_test = train_test_split(x,y,random_state = 42,test_size = 0.3)
+
+from sklearn.tree import DecisionTreeClassifier
+
+cart = DecisionTreeClassifier()
+cart_model = cart.fit(x_train,y_train)
+cart_model
+
+y_pred = cart_model.predict(x_test)
+accuracy_score(y_pred,y_test)
+
+cart_grid = {'max_depth':list(range(1,10)),
+              'min_samples_split':list(range(2,50))}
+              
+cart_cv_model = GridSearchCV(cart,cart_grid,cv=10,n_jobs=-1,verbose=2)
+cart_cv_model.fit(x_train,y_train)
+
+cart_tuned = DecisionTreeClassifier(max_depth=5,min_samples_split=19)
+cart_tuned.fit(x_train,y_train)
+
+y_pred = cart_tuned.predict(x_test)
+
+accuracy_score(y_test,y_pred)
