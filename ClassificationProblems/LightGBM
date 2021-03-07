@@ -1,0 +1,41 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import seaborn as sns
+from sklearn.preprocessing import scale
+from sklearn.model_selection import train_test_split,GridSearchCV,cross_val_score,cross_val_predict
+from sklearn.metrics import confusion_matrix,accuracy_score,classification_report,log_loss
+from sklearn.metrics import roc_auc_score,roc_curve
+import matplotlib.pyplot as plt
+from lightgbm import LGBMClassifier
+from warnings import filterwarnings
+filterwarnings('ignore')
+
+diabetes = pd.read_csv('Diabetes.csv')
+df = diabetes.copy()
+df= df.dropna()
+y=df['Outcome']
+x = df.drop (['Outcome'],axis = 1)
+#x=df['Pregnancies']
+#x=pd.DataFrame(x)
+x_train,x_test,y_train,y_test = train_test_split(x,y,random_state = 42,test_size = 0.3)
+
+gbm = LGBMClassifier()
+gbm_model = gbm.fit(x_train,y_train)
+
+y_pred = gbm_model.predict(x_test)
+
+gbm_params = {'learning_rate':[0.1,0.01,0.02,0.05],
+             'n_estimators':[100,500,1000,2000],
+             'subsample':[0.6,0.8,1],
+             'min_child_samples':[5,10,20],
+             'max_depth':[3,4,5,6]}
+             
+gbm_cv_model = GridSearchCV(gbm,gbm_params,cv=10,n_jobs=-1,verbose=2)
+gbm_cv_model.fit(x_train,y_train)
+gbm_tuned = LGBMClassifier(learning_rate=0.05,n_estimators=100,subsample=0.6,min_child_samples=20,max_depth=3)
+gbm_tuned.fit(x_train,y_train)
+y_pred = gbm_tuned.predict(x_test)
+accuracy_score(y_test,y_pred)
+
